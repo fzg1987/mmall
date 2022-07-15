@@ -16,4 +16,6 @@ import java.util.List;
  */
 public interface ProductCategoryService extends IService<ProductCategory> {
     public List<ProductCategoryVO> buildProductCategoryMenu();
+
+    public List<ProductCategoryVO> findAllProductByCategoryLevelOne();
 }
