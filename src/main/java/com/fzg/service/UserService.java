@@ -2,6 +2,7 @@ package com.fzg.service;
 
 import com.fzg.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fzg.form.UserLoginForm;
 import com.fzg.form.UserRegisterForm;
 
 /**
@@ -14,5 +15,5 @@ import com.fzg.form.UserRegisterForm;
  */
 public interface UserService extends IService<User> {
     public User register(UserRegisterForm userRegisterForm);
-
+    public User login(UserLoginForm userLoginForm);
 }

@@ -3,6 +3,7 @@ package com.fzg.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fzg.entity.User;
 import com.fzg.exception.MMallException;
+import com.fzg.form.UserLoginForm;
 import com.fzg.form.UserRegisterForm;
 import com.fzg.result.ResponseEnum;
 import com.fzg.service.UserService;
@@ -15,7 +16,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -36,6 +39,13 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    /**
+     * 用户注册
+     * @param userRegisterForm
+     * @param bindingResult
+     * @return
+     */
+
     @PostMapping("/register")
     public String register(@Valid UserRegisterForm userRegisterForm, BindingResult bindingResult){
         // 非空校验
@@ -49,6 +59,25 @@ public class UserController {
             throw new MMallException(ResponseEnum.USER_REGISTER_ERROR);
         }
         return "redirect:/login";
+    }
+
+    /**
+     * 用户登录
+     * @param userLoginForm
+     * @param bindingResult
+     * @return
+     */
+    @PostMapping("/login")
+    public String login(@Valid UserLoginForm userLoginForm, BindingResult bindingResult, HttpSession session){
+        // 非空校验
+        if(bindingResult.hasErrors()){
+            log.info("【用户登录】用户信息不能为空");
+            throw new MMallException(ResponseEnum.USER_INFO_NULL);
+        }
+        User login = this.userService.login(userLoginForm);
+        session.setAttribute("User", login);
+
+        return "redirect:/productCategory/main";
     }
 }
 
