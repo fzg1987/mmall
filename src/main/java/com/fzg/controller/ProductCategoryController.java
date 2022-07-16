@@ -1,7 +1,10 @@
 package com.fzg.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fzg.entity.Cart;
 import com.fzg.entity.User;
+import com.fzg.service.CartService;
 import com.fzg.service.ProductCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +31,9 @@ public class ProductCategoryController {
     @Autowired
     private ProductCategoryService productCategoryService;
 
+    @Autowired
+    private CartService cartService;
+
     /**
      * 首页数据
      * @param session
@@ -49,7 +55,7 @@ public class ProductCategoryController {
             modelAndView.addObject("cartList", new ArrayList<>());
         }else {
             // 登录用户，查询该用户的购物车记录
-            // TODO: 2022/7/15
+            modelAndView.addObject("cartList", this.cartService.findVOListByUserId(user.getId()));
         }
         return modelAndView;
     }

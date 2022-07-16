@@ -75,7 +75,7 @@ public class UserController {
             throw new MMallException(ResponseEnum.USER_INFO_NULL);
         }
         User login = this.userService.login(userLoginForm);
-        session.setAttribute("User", login);
+        session.setAttribute("user", login);
 
         return "redirect:/productCategory/main";
     }

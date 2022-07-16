@@ -25,13 +25,16 @@ public class UnifiedExceptionHandler {
                 modelAndView.setViewName("register");
                 modelAndView.addObject("userNameExists",responseEnum.getMsg());
                 break;
-            case 304:
+            case 305:
                 modelAndView.setViewName("login");
                 modelAndView.addObject("userNameError",responseEnum.getMsg());
                 break;
-            case 305:
-                modelAndView.setViewName("register");
+            case 306:
+                modelAndView.setViewName("login");
                 modelAndView.addObject("passwordError",responseEnum.getMsg());
+                break;
+            case 308:
+                modelAndView.setViewName("register");
                 break;
         }
         return modelAndView;

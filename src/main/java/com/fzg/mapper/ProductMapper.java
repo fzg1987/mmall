@@ -12,5 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @since 2022-07-13
  */
 public interface ProductMapper extends BaseMapper<Product> {
-
+    public Integer updateStockById(Integer id, Integer stock);
+    public Integer getStockById(Integer id);
 }
