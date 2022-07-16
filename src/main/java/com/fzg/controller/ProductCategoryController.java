@@ -1,6 +1,7 @@
 package com.fzg.controller;
 
 
+import com.fzg.entity.User;
 import com.fzg.service.ProductCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +28,12 @@ public class ProductCategoryController {
     @Autowired
     private ProductCategoryService productCategoryService;
 
+    /**
+     * 首页数据
+     * @param session
+     * @return
+     */
+
     @GetMapping("/main")
     public ModelAndView main(HttpSession session){
         ModelAndView modelAndView = new ModelAndView();
@@ -36,7 +43,7 @@ public class ProductCategoryController {
         // 封装一级分类对应的商品信息
         modelAndView.addObject("levelOneProductList",this.productCategoryService.findAllProductByCategoryLevelOne());
         // 判断是否为登录用户
-        Object user = session.getAttribute("user");
+        User user = (User) session.getAttribute("user");
         if(user == null){
             // 未登录
             modelAndView.addObject("cartList", new ArrayList<>());

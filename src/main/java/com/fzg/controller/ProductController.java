@@ -1,9 +1,22 @@
 package com.fzg.controller;
 
 
+import com.fzg.entity.User;
+import com.fzg.exception.MMallException;
+import com.fzg.result.ResponseEnum;
+import com.fzg.service.ProductCategoryService;
+import com.fzg.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 
 /**
  * <p>
@@ -14,8 +27,45 @@ import org.springframework.stereotype.Controller;
  * @since 2022-07-13
  */
 @Controller
-@RequestMapping("//product")
+@RequestMapping("/product")
+@Slf4j
 public class ProductController {
+    @Autowired
+    private ProductService productService;
+    @Autowired
+    private ProductCategoryService productCategoryService;
+    /**
+     * 商品列表
+     * @param type
+     * @param productCategoryId
+     * @param session
+     * @return
+     */
+    @GetMapping("/list/{type}/{id}")
+    public ModelAndView list(
+            @PathVariable("type") Integer type,
+            @PathVariable("id") Integer productCategoryId,
+            HttpSession session
+    ){
+        if(type == null || productCategoryId == null){
+            log.info("【商品列表】参数为空");
+            throw new MMallException(ResponseEnum.PARAMETER_NULL);
+        }
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("productList");
+        modelAndView.addObject("productList",this.productService.findAllByTypeAndProductCategoryId(type,productCategoryId));
+        // 判断用户是否为登录用户
+        User user = (User) session.getAttribute("user");
+        if(user == null){
+            // 未登录
+            modelAndView.addObject("cartList", new ArrayList<>());
+        }else {
+            // 登录用户，查询该用户的购物车记录
 
+        }
+        modelAndView.addObject("list",this.productCategoryService.buildProductCategoryMenu());
+
+        return modelAndView;
+    }
 }
 

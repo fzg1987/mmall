@@ -21,7 +21,7 @@ public class RedirectController {
 
     @GetMapping("/")
     public String main(){
-        return "redirect:/main";
+        return "redirect:/productCategory/main";
     }
 
     @GetMapping("favicon.ico")
