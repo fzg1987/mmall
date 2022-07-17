@@ -3,6 +3,7 @@ package com.fzg.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fzg.entity.Cart;
+import com.fzg.entity.Orders;
 import com.fzg.entity.User;
 import com.fzg.exception.MMallException;
 import com.fzg.result.ResponseEnum;
@@ -175,7 +176,12 @@ public class CartController {
         }
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("settlement3");
-        if(this.cartService.commit(userAddress, address, remark, user)) return modelAndView;
+        Orders orders = this.cartService.commit(userAddress, address, remark, user);
+        if(orders != null){
+            modelAndView.addObject("orders", orders);
+            modelAndView.addObject("cartList",this.cartService.findVOListByUserId(user.getId()));
+            return modelAndView;
+        }
         return null;
     }
 }

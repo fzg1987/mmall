@@ -139,7 +139,7 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
 
     @Override
     @Transactional
-    public Boolean commit(String userAddress, String address, String remark, User user) {
+    public Orders commit(String userAddress, String address, String remark, User user) {
         // 处理地址
         if(!userAddress.equals("newAddress")){
             address = userAddress;
@@ -190,7 +190,7 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
         for (Cart cart : cartList) {
             OrderDetail orderDetail = new OrderDetail();
             BeanUtils.copyProperties(cart,orderDetail);
-            orderDetail.setOrderId(cart.getId());
+            orderDetail.setOrderId(orders.getId());
             int insert1 = this.orderDetailMapper.insert(orderDetail);
             if(insert1 == 0){
                 log.info("【确认订单】创建订单详情失败");
@@ -205,6 +205,6 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
             log.info("【确认订单】清空购物车失败创建订单详情失败");
             throw new MMallException(ResponseEnum.CART_REMOVE_ERROR);
         }
-        return true;
+        return orders;
     }
 }
