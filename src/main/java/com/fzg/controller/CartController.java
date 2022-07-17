@@ -9,6 +9,7 @@ import com.fzg.result.ResponseEnum;
 import com.fzg.service.CartService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.stereotype.Controller;
@@ -121,8 +122,8 @@ public class CartController {
             log.info("【更新购物车】当前为未登录状态");
             throw new MMallException(ResponseEnum.NOT_LOGIN);
         }
-        if(this.cartService.delete(id)) return "success";
-        return "fail";
+        if(this.cartService.delete(id)) return "redirect:/cart/get";
+        return null;
     }
 }
 

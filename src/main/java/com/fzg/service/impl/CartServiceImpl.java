@@ -55,7 +55,7 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
             log.info("【购物车添加】商品库存不足");
             throw new MMallException(ResponseEnum.PRODUCT_STOCK_ERROR);
         }
-        this.productMapper.updateStockById(cart.getProductId(), - cart.getQuantity());
+        this.productMapper.updateStockById(cart.getProductId(), newStock);
         return true;
     }
 
@@ -109,12 +109,23 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
     }
 
     @Override
+    @Transactional
     public Boolean delete(Integer id) {
         //更新库存
         Cart cart = this.cartMapper.selectById(id);
-        Integer stock = this.productMapper.getStockById(id);
+        Integer stock = this.productMapper.getStockById(cart.getProductId());
         Integer newStock = stock + cart.getQuantity();
-
+        Integer integer = this.productMapper.updateStockById(cart.getProductId(), newStock);
+        if(integer != 1){
+            log.info("【删除购物车】更新商品库存失败");
+            throw new MMallException(ResponseEnum.CART_UPDATE_STOCK_ERROR);
+        }
+        // 删除购物车数据
+        int i = this.cartMapper.deleteById(id);
+        if(i != 1){
+            log.info("【删除购物车】删除失败");
+            throw new MMallException(ResponseEnum.CART_REMOVE_ERROR);
+        }
 
         return true;
     }
