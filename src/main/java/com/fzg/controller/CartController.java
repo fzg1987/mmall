@@ -7,6 +7,7 @@ import com.fzg.entity.User;
 import com.fzg.exception.MMallException;
 import com.fzg.result.ResponseEnum;
 import com.fzg.service.CartService;
+import com.fzg.service.UserAddressService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,8 @@ import java.util.ArrayList;
 public class CartController {
     @Autowired
     private CartService cartService;
+    @Autowired
+    private UserAddressService userAddressService;
     /**
      * 添加购物车
      * @param productId
@@ -125,5 +128,54 @@ public class CartController {
         if(this.cartService.delete(id)) return "redirect:/cart/get";
         return null;
     }
-}
 
+    /**
+     * 确认订单
+     * @param session
+     * @return
+     */
+    @GetMapping("/confirm")
+    public ModelAndView confirm(HttpSession session){
+        // 判断是否为登录用户
+        User user = (User) session.getAttribute("user");
+        if(user == null){
+            log.info("【添加购物车】当前为未登录状态");
+            throw new MMallException(ResponseEnum.NOT_LOGIN);
+        }
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("settlement2");
+        modelAndView.addObject("cartList", this.cartService.findVOListByUserId(user.getId()));
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("user_id",user.getId());
+        modelAndView.addObject("addressList",this.userAddressService.list(queryWrapper));
+        return modelAndView;
+    }
+
+    /**
+     * 确认订单
+     * @param userAddress
+     * @param session
+     * @return
+     */
+    @PostMapping("/commit")
+    public ModelAndView commit(
+            String userAddress,
+            String address,
+            String remark,
+            HttpSession session){
+        if(userAddress == null || address == null || remark == null){
+            log.info("【更新购物车】参数为空");
+            throw new MMallException(ResponseEnum.PARAMETER_NULL);
+        }
+        //判断是否为登录用户
+        User user = (User) session.getAttribute("user");
+        if(user == null){
+            log.info("【更新购物车】当前为未登录状态");
+            throw new MMallException(ResponseEnum.NOT_LOGIN);
+        }
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("settlement3");
+        if(this.cartService.commit(userAddress, address, remark, user)) return modelAndView;
+        return null;
+    }
+}

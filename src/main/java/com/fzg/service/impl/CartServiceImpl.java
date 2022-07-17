@@ -1,14 +1,13 @@
 package com.fzg.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.fzg.entity.Cart;
-import com.fzg.entity.Product;
+import com.fzg.entity.*;
 import com.fzg.exception.MMallException;
-import com.fzg.mapper.CartMapper;
-import com.fzg.mapper.ProductMapper;
+import com.fzg.mapper.*;
 import com.fzg.result.ResponseEnum;
 import com.fzg.service.CartService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fzg.service.UserAddressService;
 import com.fzg.vo.CartVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -18,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 
 /**
  * <p>
@@ -35,6 +36,12 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
     private CartMapper cartMapper;
     @Autowired
     private ProductMapper productMapper;
+    @Autowired
+    private OrdersMapper ordersMapper;
+    @Autowired
+    private OrderDetailMapper orderDetailMapper;
+    @Autowired
+    private UserAddressMapper userAddressMapper;
     @Override
     @Transactional
     public Boolean add(Cart cart) {
@@ -127,6 +134,77 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
             throw new MMallException(ResponseEnum.CART_REMOVE_ERROR);
         }
 
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public Boolean commit(String userAddress, String address, String remark, User user) {
+        // 处理地址
+        if(!userAddress.equals("newAddress")){
+            address = userAddress;
+        }else {
+            int i = this.userAddressMapper.setDefault(user.getId());
+            if(i == 0){
+                log.info("【确认订单】修改默认地址失败");
+                throw new MMallException(ResponseEnum.USER_ADDRESS_SET_DEFAULT_ERROR);
+            }
+            // 将新地址存入数据库
+            UserAddress userAddress1 = new UserAddress();
+            userAddress1.setIsdefault(1);
+            userAddress1.setUserId(user.getId());
+            userAddress1.setRemark(remark);
+            userAddress1.setAddress(address);
+            int insert = this.userAddressMapper.insert(userAddress1);
+            if(insert == 0){
+                log.info("【确认订单】添加新地址失败");
+                throw new MMallException(ResponseEnum.USER_ADDRESS_ADD_ERROR);
+            }
+        }
+        // 创建订单主表
+        Orders orders = new Orders();
+        orders.setUserId(user.getId());
+        orders.setLoginName(user.getLoginName());
+        orders.setUserAddress(address);
+        orders.setCost(this.cartMapper.getCostByUserId(user.getId()));
+        String serialNumber = null;
+        try {
+            StringBuffer result = new StringBuffer();
+            for (int i = 0; i < 32; i++) {
+                result.append(Integer.toHexString(new Random().nextInt(16)));
+            }
+            serialNumber = result.toString().toUpperCase();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        orders.setSerialnumber(serialNumber);
+        int insert = this.ordersMapper.insert(orders);
+        if(insert == 0){
+            log.info("【确认订单】确认订单主表失败");
+            throw new MMallException(ResponseEnum.ORDERS_CREATE_ERROR);
+        }
+        // 创建订单从表
+        QueryWrapper<Cart> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", user.getId());
+        List<Cart> cartList = this.cartMapper.selectList(queryWrapper);
+        for (Cart cart : cartList) {
+            OrderDetail orderDetail = new OrderDetail();
+            BeanUtils.copyProperties(cart,orderDetail);
+            orderDetail.setOrderId(cart.getId());
+            int insert1 = this.orderDetailMapper.insert(orderDetail);
+            if(insert1 == 0){
+                log.info("【确认订单】创建订单详情失败");
+                throw new MMallException(ResponseEnum.ORDER_DETAIL_CREATE_ERROR);
+            }
+        }
+        // 清空当前用户购物车
+        QueryWrapper<Cart> queryWrapper1 = new QueryWrapper<>();
+        queryWrapper1.eq("user_id",user.getId());
+        int delete = this.cartMapper.delete(queryWrapper1);
+        if(delete == 0){
+            log.info("【确认订单】清空购物车失败创建订单详情失败");
+            throw new MMallException(ResponseEnum.CART_REMOVE_ERROR);
+        }
         return true;
     }
 }
