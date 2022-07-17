@@ -2,12 +2,14 @@ package com.fzg.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fzg.entity.User;
+import com.fzg.entity.UserAddress;
 import com.fzg.exception.MMallException;
 import com.fzg.form.UserLoginForm;
 import com.fzg.form.UserRegisterForm;
 import com.fzg.result.ResponseEnum;
 import com.fzg.service.CartService;
 import com.fzg.service.OrdersService;
+import com.fzg.service.UserAddressService;
 import com.fzg.service.UserService;
 import com.fzg.utils.RegexValidateUtil;
 import com.fzg.vo.CartVO;
@@ -47,6 +49,8 @@ public class UserController {
     private OrdersService ordersService;
     @Autowired
     private CartService cartService;
+    @Autowired
+    private UserAddressService userAddressService;
 
     /**
      * 用户注册
@@ -104,6 +108,24 @@ public class UserController {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("orderList");
         modelAndView.addObject("orderList",this.ordersService.findAllByUserId(user.getId()));
+        // 登录用户，查询该用户的购物车记录
+        modelAndView.addObject("cartList", this.cartService.findVOListByUserId(user.getId()));
+        return modelAndView;
+    }
+
+    @GetMapping("/addressList")
+    public ModelAndView addressList(HttpSession session){
+        // 判断是否为登录用户
+        User user = (User) session.getAttribute("user");
+        if(user == null){
+            log.info("【查询订单】当前为未登录状态");
+            throw new MMallException(ResponseEnum.NOT_LOGIN);
+        }
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("userAddressList");
+        QueryWrapper<UserAddress> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id",user.getId());
+        modelAndView.addObject("addressList",this.userAddressService.list(queryWrapper));
         // 登录用户，查询该用户的购物车记录
         modelAndView.addObject("cartList", this.cartService.findVOListByUserId(user.getId()));
         return modelAndView;
