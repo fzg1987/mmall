@@ -108,5 +108,21 @@ public class CartController {
         if(this.cartService.update(id, quantity, cost)) return "success";
         return "fail";
     }
+
+    @GetMapping("/delete/{id}")
+    public String delete(@PathVariable("id") Integer id, HttpSession session){
+        if(id == null){
+            log.info("【更新购物车】参数为空");
+            throw new MMallException(ResponseEnum.PARAMETER_NULL);
+        }
+        //判断是否为登录用户
+        User user = (User) session.getAttribute("user");
+        if(user == null){
+            log.info("【更新购物车】当前为未登录状态");
+            throw new MMallException(ResponseEnum.NOT_LOGIN);
+        }
+        if(this.cartService.delete(id)) return "success";
+        return "fail";
+    }
 }
 

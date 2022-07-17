@@ -18,4 +18,5 @@ public interface CartService extends IService<Cart> {
     public Boolean add(Cart cart);
     public List<CartVO> findVOListByUserId(Integer userId);
     Boolean update(Integer id, Integer quantity, Float cost);
+    Boolean delete(Integer id);
 }

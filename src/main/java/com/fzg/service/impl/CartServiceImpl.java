@@ -107,4 +107,15 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
         }
         return true;
     }
+
+    @Override
+    public Boolean delete(Integer id) {
+        //更新库存
+        Cart cart = this.cartMapper.selectById(id);
+        Integer stock = this.productMapper.getStockById(id);
+        Integer newStock = stock + cart.getQuantity();
+
+
+        return true;
+    }
 }
